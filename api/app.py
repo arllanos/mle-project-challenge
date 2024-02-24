@@ -1,22 +1,22 @@
+import json
+import logging
+import pickle
+import time
+import uuid
+from datetime import datetime, timezone
+
+import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
-import time
-import pickle
-import pandas as pd
-import json
-import uuid
-from datetime import datetime
-import logging
 
-from datetime import timezone
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 MODEL_DIR = "model"
-DEMOGRAPHICS_PATH = 'data/zipcode_demographics.csv'
+DEMOGRAPHICS_PATH = "data/zipcode_demographics.csv"
 MODEL_PATH = f"{MODEL_DIR}/model.pkl"
 MODEL_FEATURES_PATH = f"{MODEL_DIR}/model_features.json"
-MODEL_VERSION = "1.0.0"   # TODO: This should be updated according to the versioning system implemented (dvc, mlflow)
+MODEL_VERSION = "1.0.0"   # TODO: update according to the versioning system implemented
 
 # loading data and model outside of request handler
 try:
@@ -30,6 +30,7 @@ except Exception as e:
 
 app = FastAPI()
 
+
 class BasicProperty(BaseModel):
     bedrooms: float = Field(..., example=4)
     bathrooms: float = Field(..., example=1.0)
@@ -39,6 +40,7 @@ class BasicProperty(BaseModel):
     sqft_above: int = Field(..., example=1680)
     sqft_basement: int = Field(..., example=0)
     zipcode: int = Field(..., example=98118)
+
 
 class Property(BasicProperty):
     waterfront: int = Field(..., example=0)
@@ -57,7 +59,7 @@ def process_property(property, model, demographics, model_features, model_versio
     start_time = time.time()
     property_df = pd.DataFrame([property.model_dump()])
     property_df = property_df.merge(demographics, how="left", on="zipcode")
-    property_df = property_df[model_features]  # TODO # are thre any missing values in model_features?
+    property_df = property_df[model_features]  # TODO # are there any missing values in model_features?
 
     prediction = model.predict(property_df)
     end_time = time.time()
@@ -72,6 +74,7 @@ def process_property(property, model, demographics, model_features, model_versio
         "processing_time_ms": (end_time - start_time) * 1000,
         "input_features": property.dict(),
     }
+
 
 @app.post("/predict/")
 async def predict(property: Property):
