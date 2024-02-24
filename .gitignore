@@ -2,3 +2,4 @@ model/*
 *.pyc
 
 dev_notes/*
+.vscode/launch.json
