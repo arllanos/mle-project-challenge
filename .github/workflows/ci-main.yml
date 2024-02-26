@@ -11,7 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . -t housing-price-predictor-api:$GITHUB_SHA
+      run: docker build --no-cache -t housing-price-predictor-api:$GITHUB_SHA .
       
     # TODO run tests
     # - name: Run tests
