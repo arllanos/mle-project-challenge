@@ -8,7 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # copy only the necessary directories and files for the API to work
 COPY api/ ./api/
-COPY model/ ./model/
 COPY data/zipcode_demographics.csv ./data/
 COPY model/model_features.json ./model/
 
