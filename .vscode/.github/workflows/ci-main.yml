@@ -1,0 +1,26 @@
+name: "Continuous Integration Main"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build . -t housing-price-predictor-api:$GITHUB_SHA
+      
+    # TODO run tests
+    # - name: Run tests
+    #   run: echo "Running tests..."
+      
+    - name: Log in to GitHub Container Registry
+      run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      
+    - name: Push the Docker image
+      run: |
+        docker tag housing-price-predictor-api:$GITHUB_SHA ghcr.io/${{ github.repository }}/housing-price-predictor-api:$GITHUB_SHA
+        docker push ghcr.io/${{ github.repository }}/housing-price-predictor-api:$GITHUB_SHA
