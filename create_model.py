@@ -17,13 +17,14 @@ DEMOGRAPHICS_PATH = "data/zipcode_demographics.csv"  # path to CSV with demograp
 # List of columns (subset) that will be taken from home sale data
 SALES_COLUMN_SELECTION = [
     'price', 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors',
-    'sqft_above', 'sqft_basement', 'zipcode'
+    'sqft_above', 'sqft_basement', 'zipcode',
+    'grade', 'sqft_living15', 'view'
 ]
 OUTPUT_DIR = "model"  # Directory where output artifacts will be saved
 
 
 def load_data(
-    sales_path: str, demographics_path: str, sales_column_selection: List[str]
+    sales_path: str, demographics_path: str, sales_column_selection: List[str], demographics_column_selection: List[str] = None
 ) -> Tuple[pandas.DataFrame, pandas.Series]:
     """Load the target and feature data by merging sales and demographics.
 
@@ -42,8 +43,16 @@ def load_data(
     data = pandas.read_csv(sales_path,
                            usecols=sales_column_selection,
                            dtype={'zipcode': str})
-    demographics = pandas.read_csv(demographics_path,
-                                   dtype={'zipcode': str})
+    
+    # Load demographics data, handle None by omitting usecols parameter
+    if demographics_column_selection is None:
+        demographics = pandas.read_csv(demographics_path, 
+                                       dtype={'zipcode': str})
+    else:
+        demographics = pandas.read_csv(demographics_path, 
+                                       usecols=demographics_column_selection, 
+                                       dtype={'zipcode': str})
+
 
     merged_data = data.merge(demographics, how="left",
                              on="zipcode").drop(columns="zipcode")
