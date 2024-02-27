@@ -24,3 +24,5 @@ jobs:
       run: |
         docker tag housing-price-predictor-api:$GITHUB_SHA ghcr.io/${{ github.repository }}/housing-price-predictor-api:$GITHUB_SHA
         docker push ghcr.io/${{ github.repository }}/housing-price-predictor-api:$GITHUB_SHA
+        docker tag housing-price-predictor-api:$GITHUB_SHA ghcr.io/${{ github.repository }}/housing-price-predictor-api:latest
+        docker push ghcr.io/${{ github.repository }}/housing-price-predictor-api:latest
