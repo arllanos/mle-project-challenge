@@ -3,6 +3,9 @@
 
 This document provides notes for the MLE Project Challenge, detailing the setup and usage instructions for the Housing Price Predictor API.
 
+## Key Coomponents
+![alt text](image.png)
+
 ## Setup
 
 Ensure you have Anaconda (or Miniconda) installed to manage environments and dependencies.
