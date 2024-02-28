@@ -42,7 +42,7 @@ pip3 install -U pip wheel "setuptools<60"
 pip3 install -e ".[dev]"
 ```
 
-## Start the MLFlow Traking Server
+## Start the MLFlow Tracking Server
 
 In this excercise we leverage MLflow's Model Registry to enable experiment tracking and model versioning. This involves setting up MLflow tracking server. Following command start the server and expose the UI at http://127.0.0.1:5001/
 
@@ -79,21 +79,31 @@ docker run --name housing --rm \
 housing-price-predictor-api
 ```
 
-### Option 3: Run using Docker - Pulling Remote Image
+### Option 3: Run using Docker - Pulling Remote Image built by CI
 ```sh
 # latest tag
-docker run --name housing --rm -v $(pwd)/model/:/usr/src/app/model/ -p 8000:8000 ghcr.io/arllanos/mle-project-challenge/housing-price-predictor-api:latest
+docker run --name housing --rm \
+-v $(pwd)/model/:/usr/src/app/model/ \
+-v $(pwd)/mlruns:$(pwd)/mlruns/ \
+-e MLFLOW_TRACKING_URI=http://host.docker.internal:5001 \
+-p 8000:8000 \
+ghcr.io/arllanos/mle-project-challenge/housing-price-predictor-api:latest
 
 # with specific commit SHA tag
 COMMIT_SHA=<commit_sha>
 
-docker run --name housing --rm -v $(pwd)/model/:/usr/src/app/model/ -p 8000:8000 ghcr.io/arllanos/mle-project-challenge/housing-price-predictor-api:${COMMIT_SHA}
+docker run --name housing --rm \
+-v $(pwd)/model/:/usr/src/app/model/ \
+-v $(pwd)/mlruns:$(pwd)/mlruns/ \
+-e MLFLOW_TRACKING_URI=http://host.docker.internal:5001 \
+-p 8000:8000 \
+ghcr.io/arllanos/mle-project-challenge/housing-price-predictor-api:${COMMIT_SHA}
 ```
 
 ## Request Predictions
 ### Option 1: Using Test Script
 ```sh
-python scripts/test-api.py
+python scripts/predict_examples.py
 ```
 
 ### Option 2: Using Swagger
