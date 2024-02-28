@@ -33,7 +33,7 @@ except Exception as e:
     logger.error(f"Failed to load model or data: {e}")
     raise RuntimeError("Model or data could not be loaded.") from e
 
-app = FastAPI()
+app = FastAPI(title=config.APP_NAME, description="Housing Price Prediction API")
 
 
 class BasicProperty(BaseModel):

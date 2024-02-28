@@ -42,13 +42,15 @@ pip3 install -U pip wheel "setuptools<60"
 pip3 install -e ".[dev]"
 ```
 
-## Start the MLFlow Traking Server
+## Start the MLFlow Tracking Server
 
-In this excercise we leverage MLflow's Model Registry to enable experiment tracking and model versioning. This involves setting up MLflow tracking server. Following command start the server and expose the UI at http://127.0.0.1:5001/
+In this exercise, we leverage MLflow's Model Registry to enable experiment tracking and model versioning. This process involves setting up an MLflow tracking server. The MLflow client can interface with various backend and artifact storage configurations. In our case, we configure the MLflow server to run on localhost with SQLite as the backend and artifact storage in local file system.
 
 ```sh
 mlflow ui --backend-store-uri sqlite:///mlflow.db --default-artifact-root /Users/arllanos/repos/other/mle-project-challenge/mlruns --host 0.0.0.0 --port 5001
 ```
+
+Now, you can visualize experiments and models by navigating to http://127.0.0.1:5001/
 
 ## Create the model
 
@@ -79,33 +81,33 @@ docker run --name housing --rm \
 housing-price-predictor-api
 ```
 
-### Option 3: Run using Docker - Pulling Remote Image
+### Option 3: Run using Docker - Pulling Remote Image built by CI
 ```sh
 # latest tag
-docker run --name housing --rm -v $(pwd)/model/:/usr/src/app/model/ -p 8000:8000 ghcr.io/arllanos/mle-project-challenge/housing-price-predictor-api:latest
+docker run --name housing --rm \
+-v $(pwd)/model/:/usr/src/app/model/ \
+-v $(pwd)/mlruns:$(pwd)/mlruns/ \
+-e MLFLOW_TRACKING_URI=http://host.docker.internal:5001 \
+-p 8000:8000 \
+ghcr.io/arllanos/mle-project-challenge/housing-price-predictor-api:latest
 
 # with specific commit SHA tag
 COMMIT_SHA=<commit_sha>
 
-docker run --name housing --rm -v $(pwd)/model/:/usr/src/app/model/ -p 8000:8000 ghcr.io/arllanos/mle-project-challenge/housing-price-predictor-api:${COMMIT_SHA}
+docker run --name housing --rm \
+-v $(pwd)/model/:/usr/src/app/model/ \
+-v $(pwd)/mlruns:$(pwd)/mlruns/ \
+-e MLFLOW_TRACKING_URI=http://host.docker.internal:5001 \
+-p 8000:8000 \
+ghcr.io/arllanos/mle-project-challenge/housing-price-predictor-api:${COMMIT_SHA}
 ```
 
 ## Request Predictions
 ### Option 1: Using Test Script
 ```sh
-python scripts/test-api.py
+python scripts/predict_examples.py
 ```
 
 ### Option 2: Using Swagger
 Navigate to http://127.0.0.1:8000/docs and execute the `predict` or `predict-basic` endpoints.
 
-
-## Visualize experiments and models
-1. Launch the MLflow UI
-    ```sh
-    mlflow ui
-    ```
-
-2. Access the MLflow UI
-
-    Navigate to http://127.0.0.1:5001/
