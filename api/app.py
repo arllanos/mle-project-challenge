@@ -1,38 +1,31 @@
 import json
 import logging
-import pickle
 import time
 import uuid
 from datetime import datetime, timezone
 
+import mlflow
+import mlflow.pyfunc
 import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
-import mlflow
-import mlflow.pyfunc
+
+from common.config import HousingPredictorConfig as config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-MODEL_DIR = "model"
-DEMOGRAPHICS_PATH = "data/zipcode_demographics.csv"
-MODEL_PATH = f"{MODEL_DIR}/model.pkl"
-MODEL_FEATURES_PATH = f"{MODEL_DIR}/model_features.json"
+OUTPUT_DIR = config.OUTPUT_DIR
+DEMOGRAPHICS_PATH = config.DEMOGRAPHICS_PATH
+MODEL_FEATURES_PATH = config.MODEL_FEATURES_PATH
+MLFLOW_TRACKING_URI = config.MLFLOW_TRACKING_URI
+MODEL_URI = config.MODEL_URI
 
-# Assuming your `mlruns` directory is in the current working directory
-MLFLOW_TRACKING_URI = 'file:///Users/arllanos/repos/other/mle-project-challenge/mlruns'
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-
-# RUN_ID = "0fb34a54aef247be8291665d2c27117b"  # Replace with your actual run ID
-# ARTIFACT_PATH = "housing-price-model"  # The path where the model is stored within the run's artifacts
-model_name = "housing-price-reg-model"  # The name you registered your model under
-model_version = "15"  # The specific version you want to load
-# model_uri = f"runs:/{RUN_ID}/{ARTIFACT_PATH}"
-model_uri = f"models:/{model_name}/{model_version}"
 
 try:
     # Loading the model from the local MLflow artifact store
-    model = mlflow.pyfunc.load_model(model_uri)
+    model = mlflow.pyfunc.load_model(config.MODEL_URI)
     demographics = pd.read_csv(DEMOGRAPHICS_PATH)
     with open(MODEL_FEATURES_PATH, "r") as f:
         model_features = json.load(f)

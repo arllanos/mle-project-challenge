@@ -10,15 +10,20 @@ import numpy as np
 from sklearn import model_selection, neighbors, pipeline, preprocessing
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-SALES_PATH = "data/kc_house_data.csv"  # path to CSV with home sale data
-DEMOGRAPHICS_PATH = "data/zipcode_demographics.csv"  # path to CSV with demographics
+from common.config import HousingPredictorConfig as config
+
+SALES_PATH = config.SALES_PATH
+DEMOGRAPHICS_PATH = config.DEMOGRAPHICS_PATH
 # List of columns (subset) that will be taken from home sale data
 SALES_COLUMN_SELECTION = [
     'price', 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors',
     'sqft_above', 'sqft_basement', 'zipcode',
     'grade', 'sqft_living15', 'view'
 ]
-OUTPUT_DIR = "model"  # Directory where output artifacts will be saved
+OUTPUT_DIR = config.OUTPUT_DIR
+MLFLOW_TRACKING_URI = config.MLFLOW_TRACKING_URI
+
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 
 def load_data(
@@ -99,14 +104,12 @@ def main():
             json.dump(list(x_train.columns), f)
 
         # Output model artifacts to MLflow
-        mlflow.sklearn.log_model(model, "model")
-        mlflow.log_artifact(str(features_path), "model_features.json")
-
         mlflow.sklearn.log_model(
             sk_model=model,
             artifact_path="housing-price-model",
             registered_model_name="housing-price-reg-model",
         )
+        mlflow.log_artifact(str(features_path), "model_features.json")
 
         print(f"Mlflow Run Name: {run.info.run_name}\n")
 

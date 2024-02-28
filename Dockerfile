@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # copy only the necessary directories and files for the API to work
 COPY api/ ./api/
+COPY common/ ./common/
 COPY data/zipcode_demographics.csv ./data/
 
 EXPOSE 8000
