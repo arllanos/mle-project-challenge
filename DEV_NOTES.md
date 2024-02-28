@@ -9,14 +9,36 @@ Ensure you have Anaconda installed to manage environments and dependencies.
 
 Use the following commands to create and activate the conda environment:
 
+### 1. Create and Activate the Conda Environment
 ```sh
-conda env create -f conda_environment.yml
-conda activate housing 
+# create the environment from the YAML file
+conda env update -f conda_environment.yml
+
+# activate the newly created environment
+conda activate housing
+```
+After activation, verify that the correct Python interpreter from the Conda environment is being used:
+```sh
+which python
+```
+If the output doesn't point to the Anaconda directory's Python interpreter, adjust your `PATH`.
+```sh
+# fix your path
+export PATH="$HOME/miniconda3/envs/housing/bin:$PATH"
+
+# retry activating the newly created environment
+conda activate housing
 ```
 
-### Create the model
+### 2. Python Package Installation
+    ```sh
+    pip3 install -U pip wheel "setuptools<60"
+    pip3 install -e ".[dev]"
+    ```
 
-Run `create_model.py` to train the housing price prediction model. This script generates model artifacts in the `model` directory.
+## Create the model
+
+To train the housing price prediction model, execute the `create_model.py` script. This process will generate and store the model artifacts in the `model` directory. Additionally, the script is configured to log the model artifacts to the MLflow Model Registry for versioning and tracking.
 
 ```sh
 python create_model.py
@@ -56,4 +78,15 @@ python scripts/test-api.py
 ```
 
 ### Option 2: Using Swagger
-Navigate to http://localhost:8000/docs and exeucte the `predict` or `predict-basic` endpoints.
+Navigate to http://localhost:8000/docs and execute the `predict` or `predict-basic` endpoints.
+
+
+## Visualize experiments and models
+1. Launch the MLflow UI
+    ```sh
+    mlflow ui
+    ```
+
+2. Access the MLflow UI
+
+    Navigate to http://127.0.0.1:5000/
