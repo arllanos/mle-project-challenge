@@ -1,26 +1,31 @@
 import json
 import logging
-import pickle
 import time
 import uuid
 from datetime import datetime, timezone
 
+import mlflow
+import mlflow.pyfunc
 import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
+from common.config import HousingPredictorConfig as config
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-MODEL_DIR = "model"
-DEMOGRAPHICS_PATH = "data/zipcode_demographics.csv"
-MODEL_PATH = f"{MODEL_DIR}/model.pkl"
-MODEL_FEATURES_PATH = f"{MODEL_DIR}/model_features.json"
-MODEL_VERSION = "1.0.0"   # TODO: update according to the versioning system implemented
+OUTPUT_DIR = config.OUTPUT_DIR
+DEMOGRAPHICS_PATH = config.DEMOGRAPHICS_PATH
+MODEL_FEATURES_PATH = config.MODEL_FEATURES_PATH
+MLFLOW_TRACKING_URI = config.MLFLOW_TRACKING_URI
+MODEL_URI = config.MODEL_URI
 
-# loading data and model outside of request handler
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+
 try:
-    model = pickle.load(open(MODEL_PATH, "rb"))
+    # Loading the model from the local MLflow artifact store
+    model = mlflow.pyfunc.load_model(config.MODEL_URI)
     demographics = pd.read_csv(DEMOGRAPHICS_PATH)
     with open(MODEL_FEATURES_PATH, "r") as f:
         model_features = json.load(f)
@@ -39,23 +44,23 @@ class BasicProperty(BaseModel):
     floors: float = Field(..., example=1.5, description="Number of floors.")
     sqft_above: int = Field(..., example=1680, description="Square footage above ground.")
     sqft_basement: int = Field(..., example=0, description="Basement area in square feet.")
+    view: int = Field(..., example=0, description="Quality of view (0-4 scale).")
+    grade: int = Field(..., example=6, description="Construction grade (1-13 scale).")
+    sqft_living15: int = Field(..., example=1560, description="Avg living area of 15 nearest neighbors.")
     zipcode: int = Field(..., example=98118, description="ZIP code of the property.")
 
 
 class Property(BasicProperty):
     waterfront: int = Field(..., example=0, description="Waterfront presence (1=yes, 0=no).")
-    view: int = Field(..., example=0, description="Quality of view (0-4 scale).")
     condition: int = Field(..., example=4, description="Condition (1-5 scale).")
-    grade: int = Field(..., example=6, description="Construction grade (1-13 scale).")
     yr_built: int = Field(..., example=1911, description="Year built.")
     yr_renovated: int = Field(..., example=0, description="Year renovated.")
     lat: float = Field(..., example=47.5354, description="Latitude.")
     long: float = Field(..., example=-122.273, description="Longitude.")
-    sqft_living15: int = Field(..., example=1560, description="Avg living area of 15 nearest neighbors.")
     sqft_lot15: int = Field(..., example=5765, description="Avg lot size of 15 nearest neighbors.")
 
 
-def process_property(property, model, demographics, model_features, model_version):
+def process_property(property, model, demographics, model_features):
     start_time = time.time()
     property_df = pd.DataFrame([property.model_dump()])
     property_df = property_df.merge(demographics, how="left", on="zipcode")
@@ -68,7 +73,6 @@ def process_property(property, model, demographics, model_features, model_versio
 
     return {
         "prediction": prediction[0],
-        "model_version": model_version,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "request_id": request_id,
         "processing_time_ms": (end_time - start_time) * 1000,
@@ -78,9 +82,9 @@ def process_property(property, model, demographics, model_features, model_versio
 
 @app.post("/predict/")
 async def predict(property: Property):
-    return process_property(property, model, demographics, model_features, MODEL_VERSION)
+    return process_property(property, model, demographics, model_features)
 
 
 @app.post("/predict-basic/")
 async def predict_basic(property: BasicProperty):
-    return process_property(property, model, demographics, model_features, MODEL_VERSION)
+    return process_property(property, model, demographics, model_features)
