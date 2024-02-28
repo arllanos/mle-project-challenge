@@ -3,7 +3,7 @@
 
 This document provides notes for the MLE Project Challenge, detailing the setup and usage instructions for the Housing Price Predictor API.
 
-## Key Coomponents
+## Key Components
 ![alt text](image.png)
 
 ## Setup
