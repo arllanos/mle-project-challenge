@@ -47,7 +47,7 @@ pip3 install -e ".[dev]"
 In this exercise, we leverage MLflow's Model Registry to enable experiment tracking and model versioning. This process involves setting up an MLflow tracking server. The MLflow client can interface with various backend and artifact storage configurations. In our case, we configure the MLflow server to run on localhost with SQLite as the backend and artifact storage in local file system.
 
 ```sh
-mlflow ui --backend-store-uri sqlite:///mlflow.db --default-artifact-root /Users/arllanos/repos/other/mle-project-challenge/mlruns --host 0.0.0.0 --port 5001
+mlflow ui --backend-store-uri sqlite:///mlflow.db --default-artifact-root $(PWD)/mlruns --host 0.0.0.0 --port 5001
 ```
 
 Now, you can visualize experiments and models by navigating to http://127.0.0.1:5001/
@@ -110,4 +110,3 @@ python scripts/predict_examples.py
 
 ### Option 2: Using Swagger
 Navigate to http://127.0.0.1:8000/docs and execute the `predict` or `predict-basic` endpoints.
-
